@@ -1,0 +1,75 @@
+#!/bin/bash
+echo "1 - for check System Info"
+echo "2 - for check CPU/Memory usage"
+echo "3 - for check Disk Usage"
+echo "4 - running processes by memory and cpu usage"
+echo "5 - all zombie processes"
+echo "6 - show biggest files in users directory"
+echo "0 - for exit"
+
+read -p "Enter number: " x
+
+case $x in
+
+  1)
+    echo "----------------------------------------------------System Info--------------------------------------------------------------------"
+    echo "Hostname:                      "`hostname`
+    echo "Uptime:                        "`uptime -p`
+    echo "Manufacturer:                  "`sudo dmidecode -s system-manufacturer`
+    echo "Product Name:                  "`sudo dmidecode -s system-product-name`
+    echo "Version:                       "`lsb_release -r`
+    echo "Serial Number:                 "`sudo dmidecode -s system-serial-number`
+    echo "Machine Type:                  "`sudo imvirt`
+    echo "Operating System:              "`lsb_release -d`
+    echo "Kernel:                        "`uname -r`
+    echo "Architecture:                  "`uname -m`
+    echo "Processor Name:                "`lscpu | grep "Model name:" | sed -r 's/Model name:\s{1,}//g'`
+    echo "Active User:                   "`whoami`
+    echo "System Main IP:                "`hostname -I`
+    echo "-----------------------------------------------------------------------------------------------------------------------------------"
+    ;;
+
+  2)
+    echo "-----------------------------------------------------CPU Usage---------------------------------------------------------------------"
+    grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage "%"}'
+    echo "---------------------------------------------------Memory Usage--------------------------------------------------------------------"
+    grep MemTotal /proc/meminfo
+    echo "-----------------------------------------------------------------------------------------------------------------------------------"
+    ;;
+
+  3)
+    echo "--------------------------------------------------Disk Usage > 80%-----------------------------------------------------------------"
+    df -Ph | sed s/%//g | grep /dev/s | awk '{ if($5 > 5) print $0;}'
+    echo "-----------------------------------------------------------------------------------------------------------------------------------"
+    ;;
+
+  4)
+    echo "------------------------------------------Running processes by cpu and mem usage---------------------------------------------------"
+    ps -eo pid,user,%cpu,%mem,cputime,comm --sort=-%mem | head -10
+    echo ""
+    ps -eo pid,user,%cpu,%mem,cputime,comm --sort=-%cpu | head -10
+    echo "-----------------------------------------------------------------------------------------------------------------------------------"
+    ;;
+
+  5)
+    echo "-------------------------------------------------All Zombie Procceses--------------------------------------------------------------"
+    ps aux | grep " I "
+    echo "-----------------------------------------------------------------------------------------------------------------------------------"
+    ;;
+
+  6)
+    echo "----------------------------------------------------Biggest Files------------------------------------------------------------------"
+    du -a -h | sort -n -r | head -n 10
+    echo "-----------------------------------------------------------------------------------------------------------------------------------"
+    ;;
+
+  0)
+    echo `exit`
+    ;;
+
+  *)
+    echo ""
+    echo "PLEASE ENTER ONE OF THE NUMBERS LISTED"
+    echo ""
+    ;;
+esac
